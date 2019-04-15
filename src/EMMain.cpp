@@ -11,6 +11,7 @@ int main(int argc, char* argv[]) {
   EMHome* em = new EMHome(argc, argv);
   if (em) delete em;
   auto t2 = Clock::now();
+  MPI_Barrier(MPI_COMM_WORLD);
   if (me == 0)
   {
     cout << "Delta t2-t1: "

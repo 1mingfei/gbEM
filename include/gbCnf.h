@@ -27,6 +27,11 @@ public:
   void writeLmpDataDebug(Config&, string);
 
   Config chopConfig(Config&, double, double);
+  int getExpdParam(const Config&, const double);
+  vector<Atom> expandCellZ(const Config&, const int);
+  double calDist(vector<double>, const vector<Atom>&, int, int);
+  void getNBL(Config&, double);
+  double getGBLoc(Config&);
 
   void cnvVec2Mat(const vector<double>&, Config& c);
   void cnvMat2Vec(Config&);
