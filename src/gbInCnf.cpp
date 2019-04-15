@@ -61,6 +61,7 @@ Config EMHome::gbCnf::readLmpData(const string& fname) {
   vector<string> s;
   unordered_map<string, int> mp;
   getline(ifs, buff);
+  sscanf(buff.c_str(), "# %lf %lf", &cnf.oldEngy, &cnf.engy);
 
   getline(ifs, buff, ' ');
   cnf.natoms = stoi(buff);

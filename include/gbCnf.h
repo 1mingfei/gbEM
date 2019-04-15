@@ -19,34 +19,34 @@ public:
   gbCnf(EMHome& x, double rc = 6.0)
       : hm(x), cnfs(x.cnfs), sparams(x.sparams), rcut(rc), NI(x.NI) {}
 
-  // input
+  //gbInCnf.cpp
   Config readLmpData(const string& fname);
 
   // output
+  //gbOutCnf.cpp
   void writeLmpData(Config&, string);
   void writeLmpDataDebug(Config&, string);
 
+  //alignment
+  //EMAlign.cpp
   Config chopConfig(Config&, double, double);
+  double alignInPlane(const Config&, Config&, vector<Atom>&, vector<Atom>&);
   int getExpdParam(const Config&, const double);
   vector<Atom> expandCellZ(const Config&, const int);
   double calDist(vector<double>, const vector<Atom>&, int, int);
   void getNBL(Config&, double);
-  double getGBLoc(Config&);
-
+  /*return GB Y location value, and atm stores atoms in GB level bin*/
+  double getGBLoc(Config&, vector<Atom>&);
+  
+  //gbInCnf.cpp
   void cnvVec2Mat(const vector<double>&, Config& c);
   void cnvMat2Vec(Config&);
   vector<double> cnvVecXY2VecAng(const vector<double>& v);
-  void cnvprl2pst(Config&);
 
+  //gbBox.cpp
   void initBox(Config&);
-  void initDomShift(Config&);
-  void initDom(Config&);
   void wrapAtomPos(Config&);
-  void wrapAtomPosLocal(Config&);
-  void wrapAtomPos(vector<double>& pst, const vector<double>& box,
-                   const vector<double>& len);
-  vector<double> calculateRelativePst(
-    Config& cnf, const vector<double>& pst);
+  void cnvprl2pst(Config&);
 };
 
 
