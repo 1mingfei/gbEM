@@ -25,6 +25,7 @@ using std::pair;
 #define EVA3_GPA 160.21766208
 #define SQRT3 1.73205080757
 #define MAXATOMS 2000
+#define KB 8.6173303e-5
 
 // nearest neighbors
 // 1st 8 ; 2nd 6; 3rd 12; 4th 24; 5th 8
@@ -35,9 +36,8 @@ enum { X = 0, Y = 1, Z = 2 };
 class Config {
 public:
   int natoms, ntypes;
-  double engy, aveord;
-  double oldEngy;
-  double hEngy; // energy defined by convex hull
+  double engy, oldEngy, aveord;
+  //double hEngy; // energy defined by convex hull
 
   vector<double> cell;    // lox, loy, loz, hix, hiy, hiz, xy xz yz
   vector<double> center;  // center postion
@@ -47,8 +47,8 @@ public:
   vector<int> bondbn;
   vector<int> qlbn;
   pair<int, int> atomNum;
-  double conc;
-  double QE; //QuasiEntropy
+  //double conc;
+  //double QE; //QuasiEntropy
 
   bool operator<(const Config &b) const { return this->engy < b.engy; }
   Config()
@@ -56,9 +56,9 @@ public:
         ntypes(0),
         engy(0.0),
         oldEngy(0.0),
-        hEngy(0.0),
-        QE(0.0),
-        conc(0.0),
+        //hEngy(0.0),
+        //QE(0.0),
+        //conc(0.0),
         aveord(0.0),
         cell(9),
         center(3),
@@ -74,9 +74,9 @@ public:
         ntypes(0),
         engy(0.0),
         oldEngy(0.0),
-        hEngy(0.0),
-        QE(0.0),
-        conc(0.0),
+        //hEngy(0.0),
+        //QE(0.0),
+        //conc(0.0),
         aveord(0.0),
         cell(9),
         center(3),

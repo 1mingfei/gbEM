@@ -28,6 +28,10 @@ void EMHome::readParam() {
       sparams[segs[0]] = segs[1];
     else if (!segs[0].compare("halfThick"))
       dparams[segs[0]] = stof(segs[1]);
+    else if (!segs[0].compare("T"))
+      dparams[segs[0]] = stof(segs[1]);
+    else if (!segs[0].compare("N"))
+      iparams[segs[0]] = stof(segs[1]);
   }
   fid.close();
 }

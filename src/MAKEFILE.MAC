@@ -34,7 +34,8 @@ EMSRC 	=  ./EMHome.cpp   \
                            ./gbOutCnf.cpp\
                            ./gbBox.cpp\
                            ./EMParam.cpp\
-                           ./EMAlign.cpp
+                           ./EMAlign.cpp\
+                           ./EMStat.cpp
 
 # parallel
 PARALLEL = MPI

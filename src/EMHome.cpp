@@ -8,14 +8,23 @@ EMHome::EMHome(int argc, char* argv[])
 
   iparams["Nconfigs"] = 4;
   dparams["halfThick"] = 10.0;
+  dparams["T"] = 300.0;
   sparams["refFile"] = "lmp.init";
   parseArgs(argc, argv);
   initParam();
   NI = iparams["Nconfigs"];
+  double T = dparams["T"];
+  engys = new double[NI];
+  sumEngy = 0.0;
   double halfThick = dparams["halfThick"];
+  double N = double(iparams["N"]);
   gbCnf cnfModifier(*this);
 
   runAlign(cnfModifier, halfThick);
+  getProb(cnfModifier, T, N);
 }
 
-EMHome::~EMHome() {}
+EMHome::~EMHome() 
+{
+  delete [] engys;
+}

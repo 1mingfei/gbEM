@@ -1,7 +1,7 @@
 #include "gbCnf.h"
 
 /*calculate std deviation of a vector*/
-inline double stddev(std::vector<double> const & A)
+inline double stddev(vector<double> const & A)
 {
   double mean = std::accumulate(A.begin(), A.end(), 0.0) / A.size();
   double sq_sum = std::inner_product(A.begin(), A.end(), A.begin(), 
@@ -40,13 +40,13 @@ inline void wrapAtom(Atom& atm, vector<double> length)
 
 /*calculate in-plane misfit score function
  *Note1: this only calculate in plane atoms*/
-inline double calInPlaneScore(std::vector<Atom> list0, std::vector<Atom> list1)
+inline double calInPlaneScore(vector<Atom> list0, vector<Atom> list1)
 {
   int minSize = std::min(list0.size(), list1.size());
   double sum = 0.0;
   for (int i = 0; i < minSize; ++i)
   {
-    std::vector<double> disp = calDisp(list0[i], list1[i]);
+    vector<double> disp = calDisp(list0[i], list1[i]);
     double factor;
     if (list0[i].tp == list1[i].tp)
       factor = 1.0;
@@ -60,26 +60,30 @@ inline double calInPlaneScore(std::vector<Atom> list0, std::vector<Atom> list1)
 
 void EMHome::runAlign(gbCnf& cnfModifier, double halfThick)
 {
-  c0 = std::move(cnfModifier.readLmpData(sparams["refFile"]));
+  if (me == 0) 
+    cout << "processing geometry alignment\n";
+  c0 = move(cnfModifier.readLmpData(sparams["refFile"]));
   cnfModifier.getNBL(c0, 3.8);
   vector<Atom> c0GBAtom;
   double loc = cnfModifier.getGBLoc(c0, c0GBAtom);
-  //c0 = cnfModifier.chopConfig(c0, loc, halfThick);
-  c0 = cnfModifier.chopConfig(c0, loc, 1.0);
-  cnfModifier.writeLmpDataDebug(c0, "20.txt");
-  MPI_Barrier(MPI_COMM_WORLD);
+  c0 = cnfModifier.chopConfig(c0, loc, halfThick);
+  if (me==0)
+    cnfModifier.writeLmpDataDebug(c0, to_string(NI) + ".txt");
   for (int i = 0; i < NI; ++i)
   {
     if (i%nProcs != me) continue;
-    c1 = std::move(cnfModifier.readLmpData("final." + to_string(i) + ".txt"));
+    c1 = move(cnfModifier.readLmpData("final." + to_string(i) + ".txt"));
     cnfModifier.getNBL(c1, 3.8);
     vector<Atom> c1GBAtom;
     double loc = cnfModifier.getGBLoc(c1, c1GBAtom);
-    //c1 = cnfModifier.chopConfig(c1, loc, halfThick);
-    c1 = cnfModifier.chopConfig(c1, loc, 1.0);
+    c1 = cnfModifier.chopConfig(c1, loc, halfThick);
     double bestScore = cnfModifier.alignInPlane(c0, c1, c0GBAtom, c1GBAtom);
-    std::cout << i << " best score: " << bestScore << std::endl;
     cnfModifier.writeLmpDataDebug(c1, to_string(i) + ".txt");
+
+    cout << "processed config " << i << " on processor " << me 
+         << " out of total " << nProcs  << "processors, best score: " 
+         << bestScore << endl;
+
   }
 }
 
@@ -103,7 +107,6 @@ double EMHome::gbCnf::alignInPlane(const Config& c0, Config& c1,\
       /*apply displacement to c1*/
       c1GB[j].pst[X] += disp[X];
       c1GB[j].pst[Z] += disp[Z];
-
       /*wrap back atoms*/
       wrapAtom(c1GB[j], c1.length);
     }
@@ -111,7 +114,6 @@ double EMHome::gbCnf::alignInPlane(const Config& c0, Config& c1,\
 
     /*calculate InPlane Misfit score*/
     double currScore = calInPlaneScore(c0GB, c1GB);
-    //double currScore = calInPlaneScore(c0.atoms, c1.atoms);
 
     if (currScore < bestScore)
     {
@@ -121,7 +123,6 @@ double EMHome::gbCnf::alignInPlane(const Config& c0, Config& c1,\
   }
 
   /*update all c1*/
-  std::cout << bestIndex << std::endl;
   disp = calDisp(c0GB[bestIndex], c1Copy[0]);
   for (Atom& atm : c1.atoms)
   {
@@ -168,15 +169,13 @@ void EMHome::gbCnf::getNBL(Config& cnf, double Rcut = 3.8)
   for (int i = 0; i < cnf.atoms.size(); ++i)
   {
     vector<int> res;
-    //for (int j = 0; j < cnf.atoms.size(); ++j)
     for (int j = 0; j < tmpAtoms.size(); ++j)
     {
-      //double dist = calDist(cnf.length, cnf.atoms, i, j);
       double dist = calDist(tmpLength, tmpAtoms, i, j);
       if ((dist <= Rcut) && (j % cnf.atoms.size() - i != 0))
         res.push_back(j);
     }
-    cnf.atoms[i].NBL = std::move(res);
+    cnf.atoms[i].NBL = move(res);
     cnf.atoms[i].CN = cnf.atoms[i].NBL.size();
   }
 }
@@ -186,7 +185,6 @@ int EMHome::gbCnf::getExpdParam(const Config& cnf, const double Rcut = 3.8)
   if (cnf.length[Z] > 2.0*Rcut)
     return 1;
   else
-    //return 2;
     return(static_cast<int>((2.0*Rcut/cnf.length[Z])+1));
 }
 
@@ -266,9 +264,7 @@ double EMHome::gbCnf::getGBLoc(Config& cnf, vector<Atom>& atm)
   {
     if (Count[i] > 0.01)
     {
-      //Score[i] /= Count[i];
       Loc[i] /= Count[i];
-      //if (std::abs(Score[i] - 12.0) > bestScore)
       if (stddev(Score[i]) > bestScore)
       {
         bestScore = stddev(Score[i]);
@@ -276,7 +272,7 @@ double EMHome::gbCnf::getGBLoc(Config& cnf, vector<Atom>& atm)
         atm = atomList[i];
       }
     }
-    //std::cout << i << " " << stddev(Score[i]) << " " << Loc[i] << std::endl;
+    //cout << i << " " << stddev(Score[i]) << " " << Loc[i] << endl;
   }
   return bestLoc;
 }

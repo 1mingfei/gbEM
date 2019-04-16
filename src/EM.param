@@ -1,3 +1,4 @@
 Nconfigs   4
 refFile opt.0.txt
-halfThick
+halfThick  10.0
+T 300.0

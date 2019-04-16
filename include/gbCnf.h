@@ -3,6 +3,7 @@
 
 #include "armadillo"
 #include "EMHome.h"
+#include <math.h>
 using arma::mat;
 using arma::vec;
 using std::vector;

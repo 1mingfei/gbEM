@@ -51,9 +51,10 @@ private:
   Config c0; //reference
   Config c1; //working on
   int NI;
-  pair<int, int> currTypeNum;
+  double engy; //individual energy
   double *engys;
-  double aveEngy;
+  double boltzEngy;
+  double sumEngy;
 
 public:
   int me, nProcs;
@@ -68,8 +69,11 @@ public:
   void parseArgs(int argc, char* argv[]);
   void initParam();
   void readParam();
-  //align all the configurations with a fixed thickness on each side of GB
+  /*align all the configurations with a fixed thickness on each side of GB*/
   void runAlign(gbCnf&, double);
+  /*gather energies from all the structures
+   *and calculate probability */
+  void getProb(gbCnf&, double, double);
 
 };
 
