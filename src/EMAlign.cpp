@@ -48,20 +48,14 @@ inline double calInPlaneScore(std::vector<Atom> list0, std::vector<Atom> list1)
   {
     std::vector<double> disp = calDisp(list0[i], list1[i]);
     double factor;
-    if ((list0[i].tp == 4) && (list1[i].tp == 4))
+    if (list0[i].tp == list1[i].tp)
       factor = 1.0;
-    else if ((list0[i].tp == 1) && (list1[i].tp == 1))
-      factor = 1.0;
-    else if ((list0[i].tp == 1) && (list1[i].tp == 4))
-      factor = 10.0;
-    else if ((list0[i].tp == 4) && (list1[i].tp == 1))
-      factor = 10.0;
     else
-      factor = 1.0;
-    sum += factor*(disp[X]*disp[X] + disp[Z]*disp[Z]);
+      factor = 10.0;
+    sum += factor*std::sqrt(disp[X]*disp[X] + disp[Z]*disp[Z]);
   }
   sum /= double(minSize);
-  return(sum);
+  return sum;
 }
 
 void EMHome::runAlign(gbCnf& cnfModifier, double halfThick)
@@ -108,25 +102,26 @@ double EMHome::gbCnf::alignInPlane(const Config& c0, Config& c1,\
     {
       /*apply displacement to c1*/
       c1GB[j].pst[X] += disp[X];
-      c1GB[j].pst[Y] += 0.0; 
       c1GB[j].pst[Z] += disp[Z];
 
       /*wrap back atoms*/
       wrapAtom(c1GB[j], c1.length);
+    }
+    sortAtomLexi(c1GB);
 
-      /*calculate InPlane Misfit score*/
-      double currScore = calInPlaneScore(c0GB, c1GB);
-      //double currScore = calInPlaneScore(c0.atoms, c1.atoms);
+    /*calculate InPlane Misfit score*/
+    double currScore = calInPlaneScore(c0GB, c1GB);
+    //double currScore = calInPlaneScore(c0.atoms, c1.atoms);
 
-      if (currScore < bestScore)
-      {
-        bestIndex = i;
-        bestScore = currScore;
-      }
+    if (currScore < bestScore)
+    {
+      bestIndex = i;
+      bestScore = currScore;
     }
   }
 
   /*update all c1*/
+  std::cout << bestIndex << std::endl;
   disp = calDisp(c0GB[bestIndex], c1Copy[0]);
   for (Atom& atm : c1.atoms)
   {
