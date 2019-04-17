@@ -52,7 +52,6 @@ private:
   Config c1; //working on
   int NI;
   double engy; //individual energy
-  double *engys;
   double boltzEngy;
   double sumEngy;
 

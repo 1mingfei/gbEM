@@ -37,7 +37,6 @@ class Config {
 public:
   int natoms, ntypes;
   double engy, oldEngy, aveord;
-  //double hEngy; // energy defined by convex hull
 
   vector<double> cell;    // lox, loy, loz, hix, hiy, hiz, xy xz yz
   vector<double> center;  // center postion
@@ -47,8 +46,6 @@ public:
   vector<int> bondbn;
   vector<int> qlbn;
   pair<int, int> atomNum;
-  //double conc;
-  //double QE; //QuasiEntropy
 
   bool operator<(const Config &b) const { return this->engy < b.engy; }
   Config()
@@ -56,9 +53,6 @@ public:
         ntypes(0),
         engy(0.0),
         oldEngy(0.0),
-        //hEngy(0.0),
-        //QE(0.0),
-        //conc(0.0),
         aveord(0.0),
         cell(9),
         center(3),
@@ -74,9 +68,6 @@ public:
         ntypes(0),
         engy(0.0),
         oldEngy(0.0),
-        //hEngy(0.0),
-        //QE(0.0),
-        //conc(0.0),
         aveord(0.0),
         cell(9),
         center(3),

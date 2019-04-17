@@ -14,17 +14,17 @@ EMHome::EMHome(int argc, char* argv[])
   initParam();
   NI = iparams["Nconfigs"];
   double T = dparams["T"];
-  engys = new double[NI];
   sumEngy = 0.0;
   double halfThick = dparams["halfThick"];
   double N = double(iparams["N"]);
   gbCnf cnfModifier(*this);
 
   runAlign(cnfModifier, halfThick);
+
+  cnfs.assign(NI, c0);
   getProb(cnfModifier, T, N);
 }
 
 EMHome::~EMHome() 
 {
-  delete [] engys;
 }
