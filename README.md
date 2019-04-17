@@ -10,4 +10,4 @@ Nconfigs: specify total number of configurations
 refFile: reference structure which will be used as the final output structure as an atomic meshing grid
 halfThick: cutoff of grain boundary thickness on each side
 
-Disclaimer: gbCnf gbDef gbUtl are taken directly from my colleague chaomy
+Disclaimer: gbCnf gbDef gbUtl are originally taken from my colleague chaomy

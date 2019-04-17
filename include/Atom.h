@@ -8,6 +8,7 @@ class Atom
 private:
 public:
   int id, tp, CN, CNA;
+  int posStd, tpMean, tpStd;
   double pst[3], prl[3];
   vector<int> NBL;
 

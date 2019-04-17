@@ -23,6 +23,9 @@ EMHome::EMHome(int argc, char* argv[])
 
   cnfs.assign(NI, c0);
   getProb(cnfModifier, T, N);
+
+  estimateMean(cnfModifier);
+
 }
 
 EMHome::~EMHome() 

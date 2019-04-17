@@ -76,4 +76,5 @@ public:
 
 };
 
+#include "EMAlign.inl"
 #endif
