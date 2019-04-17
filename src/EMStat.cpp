@@ -101,11 +101,6 @@ void EMHome::estimateMean(gbCnf& cnfModifier)
     data[i] = new double [10];
 
   /*smallest buff for gathering in each cycle*/
-  double** buffCycle = new double* [nProcs];
-  for (int i = 0; i < nProcs; ++i)
-    buffCycle[i] = new double [10];
-
-  /*smallest buff for gathering in each cycle*/
   double* buffData = new double [10];
 
   for (int k = 0; k < nCycle; ++k)
@@ -113,8 +108,10 @@ void EMHome::estimateMean(gbCnf& cnfModifier)
     for (int i = (k * nProcs); i < ((k + 1) * nProcs); ++i)
     {
       if ((me == 0) && (i % nProcs != 0))
-        MPI_Recv(data[k * nProcs + i % nProcs], 10, MPI_DOUBLE, (i % nProcs), 0,
+      {
+        MPI_Recv(&data[i][0], 10, MPI_DOUBLE, (i % nProcs), 0,
                  MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      }
 
       if (i % nProcs != me) continue;
 
@@ -193,21 +190,28 @@ void EMHome::estimateMean(gbCnf& cnfModifier)
 
       /*unfortunately this send and receive always cause seg fault*/
       if (me != 0)
-        MPI_Send(&buffData, 10, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(&buffData[0], 10, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
       else
-        data[k * nProcs + i % nProcs] = buffData;
+      {
+        for (int ii = 0; ii < 10; ++ii)
+          data[k * nProcs + i % nProcs][ii] = buffData[ii];
+      }
     }
     MPI_Barrier(MPI_COMM_WORLD);
   }
 
+  if (me == 0)
+    for (int i = 0; i < (nCycle * nProcs); ++i)
+    {
+      cout << i << " ";
+      for (int j = 0; j < 10; ++j)
+        cout  << std::setprecision(5) << data[i][j] << " ";
+      cout << endl;
+    }
+
   /*free smallest buffer*/
   delete [] buffData;
-
-  /*free cycle buffer*/
-  for (int i = 0; i < nProcs; ++i)
-    delete [] buffCycle[i];
-  delete [] buffCycle;
-  
+ 
   /*free largest data set*/
   for (int i = 0; i < (nCycle * nProcs); ++i)
     delete [] data[i];
