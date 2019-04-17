@@ -20,31 +20,35 @@ public:
   gbCnf(EMHome& x, double rc = 6.0)
       : hm(x), cnfs(x.cnfs), sparams(x.sparams), rcut(rc), NI(x.NI) {}
 
-  //gbInCnf.cpp
+  /*gbInCnf.cpp*/
   Config readLmpData(const string& fname);
 
-  // output
-  //gbOutCnf.cpp
+  /*output
+   *gbOutCnf.cpp*/
   void writeLmpData(Config&, string);
   void writeLmpDataDebug(Config&, string);
 
-  //alignment
-  //EMAlign.cpp
+  /*alignment
+   *EMAlign.cpp*/
   Config chopConfig(Config&, double, double);
   double alignInPlane(const Config&, Config&, vector<Atom>&, vector<Atom>&);
   int getExpdParam(const Config&, const double);
   vector<Atom> expandCellZ(const Config&, const int);
-  double calDist(vector<double>, const vector<Atom>&, int, int);
+  double calDist(const vector<double>, const Atom&, const Atom&);
   void getNBL(Config&, double);
   /*return GB Y location value, and atm stores atoms in GB level bin*/
   double getGBLoc(Config&, vector<Atom>&);
+
+  /*closest ID
+   *EMStat.cpp*/
+  int getNNID(Atom&, Config&, double&);
   
-  //gbInCnf.cpp
+  /*gbInCnf.cpp*/
   void cnvVec2Mat(const vector<double>&, Config& c);
   void cnvMat2Vec(Config&);
   vector<double> cnvVecXY2VecAng(const vector<double>& v);
 
-  //gbBox.cpp
+  /*gbBox.cpp*/
   void initBox(Config&);
   void wrapAtomPos(Config&);
   void cnvprl2pst(Config&);

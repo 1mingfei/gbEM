@@ -13,17 +13,18 @@ inline double getProbMean(vector<double> const & A, vector<double> const & prob)
   double sum = 0.0;
   for (int i = 0; i < A.size(); ++i)
     sum += A[i] * prob[i];
-  double mean = sum / A.size(); 
-  return mean;
+  return sum;
 }
 
 /*calculate std deviation of a vector with predefined prob*/
-inline double getStdDevProb(vector<double> const & A, vector<double> const & prob, double const mean)
+inline double getStdDevProb(vector<double> const & A,
+                            vector<double> const & prob,
+                            double const mean)
 {
   assert(A.size() == prob.size());
   double sum = 0.0;
   for (int i = 0; i < A.size(); ++i)
-    sum += (A[i] - mean) * (A[i] - mean) * prob[i];
+    sum += ((A[i] - mean) * (A[i] - mean) * prob[i]);
   double std = sqrt(sum); 
   return std;
 }
@@ -35,7 +36,7 @@ inline double stddev(vector<double> const & A)
   double sq_sum = std::inner_product(A.begin(), A.end(), A.begin(), 
     0.0, [](double const & x, double const & y) {return x + y;},
     [mean](double const & x, double const & y) {return (x - mean)*(y - mean);});
-  return sq_sum / ( A.size() - 1 );
+  return sq_sum / (A.size() - 1);
 }
 
 /*Sort points lexicographically*/

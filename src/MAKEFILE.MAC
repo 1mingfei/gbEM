@@ -19,8 +19,8 @@ CPPFLAGS	  =  -std=c++11
 #   option, something like (this will link in libmylib.so and libm.so:
 
 LMP_LIB     =  ${HOME}/Softwares/lammps/src/
-CINCLUDE 	=  -I../include  -I${LMP_LIB}
-LIBS   		=  -L${LMP_LIB} # -L${MPI_HOME}/lib
+CINCLUDE 	=  -I../include  
+LIBS   		=  # -L${MPI_HOME}/lib
 #CDLINK  	=  ${LIBS} -lm -lnlopt -lmpi -lpthread -lCGAL -lgmp -larmadillo -llammps 
 #CDLINK  	=  ${LIBS} -lm -lmpi -lpthread -lCGAL -lgmp -larmadillo -llammps  -lboost_mpi -lboost_system -lboost_serialization #-fopenmp
 CDLINK  	=  ${LIBS} -lm -lmpi -lpthread -lCGAL -lgmp -larmadillo 
@@ -47,7 +47,7 @@ CC = ${CC_MPI}
 OBJECTS := $(subst .cpp,.o,${EMSRC})
 
 %.o: %.cpp
-	${CC} -c  $<  ${CINCLUDE}  ${OPTFLAGS}  ${CPPFLAGS}  # ${LIBS}
+	${CC} -c  $<  ${CINCLUDE}  ${OPTFLAGS}  ${CPPFLAGS} 
 
 ${MAKETARGET}:$(OBJECTS)
 

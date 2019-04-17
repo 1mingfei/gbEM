@@ -29,7 +29,7 @@ void EMHome::getProb(gbCnf& cnfModifier, double T, double N)
       boltzEngy = 0.0; //important to initialize here
       if (i >= NI) continue;
 
-      c1 = std::move(cnfModifier.readLmpData(to_string(i) + ".txt"));
+      c1 = move(cnfModifier.readLmpData(to_string(i) + ".txt"));
       engy = c1.engy / N;
       boltzEngy = exp(-engy/KB/T);
       cout << "read in config " << i << " on processor " << me 
@@ -75,52 +75,161 @@ void EMHome::getProb(gbCnf& cnfModifier, double T, double N)
  *then calculate type mean and std. */
 void EMHome::estimateMean(gbCnf& cnfModifier)
 {
+  MPI_Barrier(MPI_COMM_WORLD);
+  if (me == 0)
+    std::cout << "calculating ave configuration based on energies...\n";
+ 
+  c0 = move(cnfModifier.readLmpData(to_string(NI) + ".txt"));
+  for (int i = 0; i < NI; ++i)
+    cnfs[i] = move(cnfModifier.readLmpData(to_string(i) + ".txt"));
+
+  MPI_Barrier(MPI_COMM_WORLD);
   int nAtom = c0.atoms.size();
-  for (int i = 0; i < nAtom; ++i)
+
+
+  /*here based on atoms*/
+  int quotient = nAtom / nProcs;
+  int remainder = nAtom % nProcs;
+  int nCycle = remainder ? (quotient + 1) : quotient;
+
+
+  /*allocate largest memory for all nAtom (this is slightly larger than needed) 
+   *Note that "nCycle * nProcs >= nAtoms"
+   *all data store here after this*/
+  double** data = new double* [nCycle * nProcs];
+  for (int i = 0; i < (nCycle * nProcs); ++i)
+    data[i] = new double [10];
+
+  /*smallest buff for gathering in each cycle*/
+  double** buffCycle = new double* [nProcs];
+  for (int i = 0; i < nProcs; ++i)
+    buffCycle[i] = new double [10];
+
+  /*smallest buff for gathering in each cycle*/
+  double* buffData = new double [10];
+
+  for (int k = 0; k < nCycle; ++k)
   {
-    if (i % nProcs != me) continue;
-
-    vector<double> dists;
-    vector<double> posX;
-    vector<double> posY;
-    vector<double> posZ;
-    vector<double> type;
-    vector<double> prob;
-
-    for (int j = 0; j < NI; ++j)
+    for (int i = (k * nProcs); i < ((k + 1) * nProcs); ++i)
     {
-      /*get which atom in cnfs[j] is closest to atom[i] in c0. */
-      double dist;
-      int closest = getNNID(c0, i, cnfs[j], dist);
-      Atom tmpAtom = cnfs[j].atoms[closest];
+      if ((me == 0) && (i % nProcs != 0))
+        MPI_Recv(data[k * nProcs + i % nProcs], 10, MPI_DOUBLE, (i % nProcs), 0,
+                 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+      if (i % nProcs != me) continue;
+
+      vector<double> dists(NI, 0.0);
+      vector<double> posX(NI, 0.0);
+      vector<double> posY(NI, 0.0);
+      vector<double> posZ(NI, 0.0);
+      vector<double> IDtyp(NI, 0.0);
+      vector<double> prob(NI, 0.0);
       
-      dists.push_back(dist);
-      posX.push_back(tmpAtom.pst[X]);
-      posY.push_back(tmpAtom.pst[Y]);
-      posZ.push_back(tmpAtom.pst[Z]);
-      double tmpType = (tmpAtom.tp == 1) ? 1.0 : 2.0;
-      type.push_back(tmpType);
-      prob = cnfs[j].oldEngy;
+      /*!!!!initialize buffer data here 
+       *very important for unequal size of nProcs and leftover iterations*/
+      for (int j = 0; j < 10; ++j)
+        buffData[j] = 0.0;
+
+      if (i >= nAtom) continue;
+
+      for (int j = 0; j < NI; ++j)
+      {
+        /*get which atom in cnfs[j] is closest to atom[i] in c0. */
+        double dist;
+        int closest = cnfModifier.getNNID(c0.atoms[i], cnfs[j], dist);
+        Atom tmpAtom = cnfs[j].atoms[closest];
+        
+        dists[j] = dist;
+
+        /*correct relative position*/
+        double tmp = tmpAtom.pst[X] - c0.atoms[i].pst[X];
+        if (tmp > c0.length[X]/2.0) tmpAtom.pst[X] -= c0.length[X];
+        if (tmp < -c0.length[X]/2.0) tmpAtom.pst[X] += c0.length[X];
+        tmp = tmpAtom.pst[Y] - c0.atoms[i].pst[Y];
+        if (tmp > c0.length[Y]/2.0) tmpAtom.pst[Y] -= c0.length[Y];
+        if (tmp < -c0.length[Y]/2.0) tmpAtom.pst[Y] += c0.length[Y];
+        tmp = tmpAtom.pst[Z] - c0.atoms[i].pst[Z];
+        if (tmp > c0.length[Z]/2.0) tmpAtom.pst[Z] -= c0.length[Z];
+        if (tmp < -c0.length[Z]/2.0) tmpAtom.pst[Z] += c0.length[Z];
+
+        posX[j] = tmpAtom.pst[X];
+        posY[j] = tmpAtom.pst[Y];
+        posZ[j] = tmpAtom.pst[Z];
+        double tmpType = (tmpAtom.tp == 1) ? 0.0 : 1.0;
+        IDtyp[j] = tmpType;
+        prob[j] = cnfs[j].oldEngy;
+      }
+
+      /*get some stats*/
+      double meanDist = getProbMean(dists, prob);
+      double meanX = getProbMean(posX, prob);
+      double meanY = getProbMean(posY, prob);
+      double meanZ = getProbMean(posZ, prob);
+      double meanType = getProbMean(IDtyp, prob);
+      double stdDist = getStdDevProb(dists, prob, meanDist);
+      double stdX = getStdDevProb(posX, prob, meanX);
+      double stdY = getStdDevProb(posY, prob, meanY);
+      double stdZ = getStdDevProb(posZ, prob, meanZ);
+      double stdTp = getStdDevProb(IDtyp, prob, meanType);
+
+      cout << std::setprecision(6) << "on rank " << me 
+           << " atomID " << c0.atoms[i].id
+           << " meanX: " << meanX << " meanY: " << meanY << " meanZ: " << meanZ
+           << " stdX: " << stdX << " stdY: " << stdY << " stdZ: " << stdZ
+           << " posStd: " << stdDist
+           << " typeMean: " << meanType 
+           << " typeStd: " << stdTp << endl;
+
+      buffData[0] = meanX;
+      buffData[1] = stdX;
+      buffData[2] = meanY;
+      buffData[3] = stdY;
+      buffData[4] = meanZ;
+      buffData[5] = stdZ;
+      buffData[6] = meanDist;
+      buffData[7] = stdDist;
+      buffData[8] = meanType;
+      buffData[9] = stdTp;
+
+      /*unfortunately this send and receive always cause seg fault*/
+      if (me != 0)
+        MPI_Send(&buffData, 10, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+      else
+        data[k * nProcs + i % nProcs] = buffData;
     }
-
-    /*get some stats*/
-    double meanDist = getProbMean(dists, prob);
-    double meanX = getProbMean(posX, prob);
-    double meanY = getProbMean(posY, prob);
-    double meanZ = getProbMean(posZ, prob);
-    double meanType = getProbMean(type, prob);
-    c0.atoms[i].tpMean = meanType;
-
-    c0.atoms[i].posStd = getStdDevProb(dists, prob, meanDist);
-    c0.atoms[i].tpStd = getStdDevProb(type, prob, meanType);
-
-    cout << "on rank " << me << " atomID " c0.atoms[i].id 
-         << " meanX: " << meanX << " meanY: " << meanY << " meanZ: " << meanZ
-         << " posStd: " << c0.atoms[i].posStd 
-         << " typeMean: " << c0.atoms[i].tpMean 
-         << " typeStd: " << c0.atoms[i].tpStd << endl;
+    MPI_Barrier(MPI_COMM_WORLD);
   }
+
+  /*free smallest buffer*/
+  delete [] buffData;
+
+  /*free cycle buffer*/
+  for (int i = 0; i < nProcs; ++i)
+    delete [] buffCycle[i];
+  delete [] buffCycle;
+  
+  /*free largest data set*/
+  for (int i = 0; i < (nCycle * nProcs); ++i)
+    delete [] data[i];
+  delete [] data;
 
 }
 
-
+/*get which atom in c1 is closest to atom[i] in c0.
+ *atm is our reference atom, cnf is the sturcture to search
+ *calculated dist is returned afterwards. */
+int EMHome::gbCnf::getNNID(Atom& atm, Config& cnf, double& dist)
+{
+  dist = std::numeric_limits<double>::max();
+  int res;
+  for (int i = 0; i < cnf.atoms.size(); ++i)
+  {
+    double tmpDist = calDist(cnf.length, cnf.atoms[i], atm);
+    if (tmpDist < dist)
+    {
+      dist = tmpDist;
+      res = i;
+    }
+  }
+  return res;
+}

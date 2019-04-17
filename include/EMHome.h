@@ -73,7 +73,7 @@ public:
   /*gather energies from all the structures
    *and calculate probability */
   void getProb(gbCnf&, double, double);
-
+  void estimateMean(gbCnf&);
 };
 
 #include "EMAlign.inl"
