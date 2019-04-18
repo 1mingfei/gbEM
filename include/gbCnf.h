@@ -27,6 +27,7 @@ public:
    *gbOutCnf.cpp*/
   void writeLmpData(Config&, string);
   void writeLmpDataDebug(Config&, string);
+  void writeCfgData(const Config& c, const vector<vector<double>>&,string);
 
   /*alignment
    *EMAlign.cpp*/
@@ -52,6 +53,7 @@ public:
   void initBox(Config&);
   void wrapAtomPos(Config&);
   void cnvprl2pst(Config&);
+  void cnvpst2prl(Config&);
 };
 
 

@@ -176,7 +176,7 @@ void EMHome::estimateMean(gbCnf& cnfModifier)
            << " posStd: " << stdDist
            << " typeMean: " << meanType 
            << " typeStd: " << stdTp << endl;
-
+      /*pack data and send those sh*t*/
       buffData[0] = meanX;
       buffData[1] = stdX;
       buffData[2] = meanY;
@@ -187,8 +187,6 @@ void EMHome::estimateMean(gbCnf& cnfModifier)
       buffData[7] = stdDist;
       buffData[8] = meanType;
       buffData[9] = stdTp;
-
-      /*unfortunately this send and receive always cause seg fault*/
       if (me != 0)
         MPI_Send(&buffData[0], 10, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
       else
@@ -197,17 +195,36 @@ void EMHome::estimateMean(gbCnf& cnfModifier)
           data[k * nProcs + i % nProcs][ii] = buffData[ii];
       }
     }
+
     MPI_Barrier(MPI_COMM_WORLD);
   }
 
   if (me == 0)
+  {
+    //convert data to vector dtype
+    vector<vector<double>> VVData;
     for (int i = 0; i < (nCycle * nProcs); ++i)
     {
+      vector<double> tmpVec;
       cout << i << " ";
       for (int j = 0; j < 10; ++j)
+      {
         cout  << std::setprecision(5) << data[i][j] << " ";
+        tmpVec.push_back(data[i][j]);
+      }
+      VVData.push_back(tmpVec);
       cout << endl;
     }
+    //update c0 informations
+    for (int i = 0; i < c0.atoms.size(); ++i)
+    {
+      c0.atoms[i].pst[X] = data[i][0];
+      c0.atoms[i].pst[Y] = data[i][2];
+      c0.atoms[i].pst[Z] = data[i][4];
+    }
+    cnfModifier.writeCfgData(c0, VVData, "final.cfg");
+  }
+
 
   /*free smallest buffer*/
   delete [] buffData;

@@ -1,8 +1,8 @@
 /*
  * @Author: chaomy
  * @Date:   2018-07-07 16:58:27
- * @Last Modified by:   chaomy
- * @Last Modified time: 2018-10-25 12:36:34
+ * @Last Modified by:  1mingfei 
+ * @Last Modified time: 2019-4-17 05:32:23
  */
 
 #include "gbCnf.h"
@@ -54,5 +54,80 @@ void EMHome::gbCnf::writeLmpDataDebug(Config& c, string fnm = "out.lmp.init") {
     auto&& a = c.atoms[i];
     ofs << a.id + 1 << " " << a.tp << " " << a.pst[0] << " " << a.pst[1]
         << " " << a.pst[2] << endl;
+  }
+}
+
+/* write cfg data files*/
+/*
+Number of particles = 16200
+A = 4.37576470588235 Angstrom (basic length-scale)
+H0(1,1) = 127.5 A
+H0(1,2) = 0 A
+H0(1,3) = 0 A
+H0(2,1) = 0 A
+H0(2,2) = 119.501132067411 A
+H0(2,3) = 0 A
+H0(3,1) = 0 A
+H0(3,2) = 0 A
+H0(3,3) = 3 A
+.NO_VELOCITY.
+entry_count = 9
+auxiliary[0] = kine [reduced unit]
+auxiliary[1] = pote [reduced unit]
+auxiliary[2] = s11 [reduced unit]
+auxiliary[3] = s22 [reduced unit]
+auxiliary[4] = s12 [reduced unit]
+auxiliary[5] = hydro [reduced unit]
+1.000000
+Ar
+0.0016667 0.00616 0.5 0 -2 -1.9431e-13 -2.9917e-13 1.6811e-13 -2.4674e-13 
+
+      buffData[0] = meanX;
+      buffData[1] = stdX;
+      buffData[2] = meanY;
+      buffData[3] = stdY;
+      buffData[4] = meanZ;
+      buffData[5] = stdZ;
+      buffData[6] = meanDist;
+      buffData[7] = stdDist;
+      buffData[8] = meanType;
+      buffData[9] = stdTp;
+ */
+void EMHome::gbCnf::writeCfgData(const Config& c, const vector<vector<double>>& data,
+                                 string fnm = "out.lmp.init")
+{
+  ofstream ofs(fnm, std::ofstream::out);
+  ofs << "Number of particles =  " << (int)c.atoms.size() << endl;
+  ofs << "A = 1.0 Angstrom (basic length-scale)" << endl;
+  ofs << "H0(1,1) = " << c.length[X] << " A" << endl;
+  ofs << "H0(1,2) = 0 A" << endl;
+  ofs << "H0(1,3) = 0 A" << endl;
+  ofs << "H0(2,1) = 0 A" << endl;
+  ofs << "H0(2,2) = " << c.length[Y] << " A" << endl;
+  ofs << "H0(2,3) = 0 A" << endl;
+  ofs << "H0(3,1) = 0 A" << endl;
+  ofs << "H0(3,2) = 0 A" << endl;
+  ofs << "H0(3,3) = " << c.length[Z] << " A" << endl;
+  ofs << ".NO_VELOCITY." << endl;
+  ofs << "entry_count = 10" << endl;
+  ofs << "auxiliary[0] = stdX" << endl;
+  ofs << "auxiliary[1] = stdY" << endl;
+  ofs << "auxiliary[2] = stdZ" << endl;
+  ofs << "auxiliary[3] = mean_distance" << endl;
+  ofs << "auxiliary[4] = std_distance" << endl;
+  ofs << "auxiliary[5] = mean_type" << endl;
+  ofs << "auxiliary[6] = std_type" << endl;
+  for (int i = 0; i < c.atoms.size(); ++i) 
+  {
+    auto&& a = c.atoms[i];
+    if (a.tp == 1)
+      ofs << "24.305" << endl << "Mg" << endl;
+    else if (a.tp == 4)
+      ofs << "65.38" << endl << "Zn" << endl;
+    ofs << a.pst[X]/c.length[X] << " " << a.pst[Y]/c.length[Y] << " " << a.pst[Z]/c.length[Z] << " ";
+    if (data.size())
+      ofs << data[i][1] << " " << data[i][3] << " " << data[i][5] << " "
+          << data[i][6] << " " << data[i][7] << " " << data[i][8] << " "
+          << data[i][9] << endl; 
   }
 }
