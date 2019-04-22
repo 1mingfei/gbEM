@@ -1,3 +1,10 @@
+/*
+ * Author: 1mingfei 
+ * Date:   2019-04-14
+ * Purpose: inline functions for EMHome
+ * self-explained
+ */
+
 #include "gbCnf.h"
 #include "EMHome.h"
 
@@ -25,7 +32,6 @@ EMHome::EMHome(int argc, char* argv[])
   getProb(cnfModifier, T, N);
 
   estimateMean(cnfModifier);
-
 }
 
 EMHome::~EMHome() 

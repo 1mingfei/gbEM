@@ -92,6 +92,7 @@ Ar
       buffData[7] = stdDist;
       buffData[8] = meanType;
       buffData[9] = stdTp;
+
  */
 void EMHome::gbCnf::writeCfgData(const Config& c, const vector<vector<double>>& data,
                                  string fnm = "out.lmp.init")
@@ -99,15 +100,15 @@ void EMHome::gbCnf::writeCfgData(const Config& c, const vector<vector<double>>& 
   ofstream ofs(fnm, std::ofstream::out);
   ofs << "Number of particles =  " << (int)c.atoms.size() << endl;
   ofs << "A = 1.0 Angstrom (basic length-scale)" << endl;
-  ofs << "H0(1,1) = " << c.length[X] << " A" << endl;
-  ofs << "H0(1,2) = 0 A" << endl;
-  ofs << "H0(1,3) = 0 A" << endl;
-  ofs << "H0(2,1) = 0 A" << endl;
-  ofs << "H0(2,2) = " << c.length[Y] << " A" << endl;
-  ofs << "H0(2,3) = 0 A" << endl;
-  ofs << "H0(3,1) = 0 A" << endl;
-  ofs << "H0(3,2) = 0 A" << endl;
-  ofs << "H0(3,3) = " << c.length[Z] << " A" << endl;
+  ofs << "H0(1,1) = " << c.bvx[X] << " A" << endl;
+  ofs << "H0(1,2) = " << c.bvx[Y] << " A" << endl;
+  ofs << "H0(1,3) = " << c.bvx[Z] << " A" << endl;
+  ofs << "H0(2,1) = " << c.bvy[X] << " A" << endl;
+  ofs << "H0(2,2) = " << c.bvy[Y] << " A" << endl;
+  ofs << "H0(2,3) = " << c.bvy[Z] << " A" << endl;
+  ofs << "H0(3,1) = " << c.bvz[X] << " A" << endl;
+  ofs << "H0(3,2) = " << c.bvz[Y] << " A" << endl;
+  ofs << "H0(3,3) = " << c.bvz[Z] << " A" << endl;
   ofs << ".NO_VELOCITY." << endl;
   ofs << "entry_count = 10" << endl;
   ofs << "auxiliary[0] = stdX" << endl;
@@ -124,7 +125,7 @@ void EMHome::gbCnf::writeCfgData(const Config& c, const vector<vector<double>>& 
       ofs << "24.305" << endl << "Mg" << endl;
     else if (a.tp == 4)
       ofs << "65.38" << endl << "Zn" << endl;
-    ofs << a.pst[X]/c.length[X] << " " << a.pst[Y]/c.length[Y] << " " << a.pst[Z]/c.length[Z] << " ";
+    ofs << a.prl[X] << " " << a.prl[Y] << " " << a.prl[Z] << " ";
     if (data.size())
       ofs << data[i][1] << " " << data[i][3] << " " << data[i][5] << " "
           << data[i][6] << " " << data[i][7] << " " << data[i][8] << " "

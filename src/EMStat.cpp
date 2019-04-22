@@ -176,7 +176,8 @@ void EMHome::estimateMean(gbCnf& cnfModifier)
            << " posStd: " << stdDist
            << " typeMean: " << meanType 
            << " typeStd: " << stdTp << endl;
-      /*pack data and send those sh*t*/
+
+      /*pack data and send*/
       buffData[0] = meanX;
       buffData[1] = stdX;
       buffData[2] = meanY;
@@ -187,6 +188,7 @@ void EMHome::estimateMean(gbCnf& cnfModifier)
       buffData[7] = stdDist;
       buffData[8] = meanType;
       buffData[9] = stdTp;
+
       if (me != 0)
         MPI_Send(&buffData[0], 10, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
       else
@@ -206,23 +208,31 @@ void EMHome::estimateMean(gbCnf& cnfModifier)
     for (int i = 0; i < (nCycle * nProcs); ++i)
     {
       vector<double> tmpVec;
+#ifdef DEBUG
       cout << i << " ";
+#endif
       for (int j = 0; j < 10; ++j)
       {
+#ifdef DEBUG
         cout  << std::setprecision(5) << data[i][j] << " ";
+#endif
         tmpVec.push_back(data[i][j]);
       }
-      VVData.push_back(tmpVec);
+#ifdef DEBUG
       cout << endl;
+#endif
+      VVData.push_back(tmpVec);
     }
-    //update c0 informations
+    /*update c0 position informations*/
     for (int i = 0; i < c0.atoms.size(); ++i)
     {
       c0.atoms[i].pst[X] = data[i][0];
       c0.atoms[i].pst[Y] = data[i][2];
       c0.atoms[i].pst[Z] = data[i][4];
     }
+    cnfModifier.cnvpst2prl(c0);
     cnfModifier.writeCfgData(c0, VVData, "final.cfg");
+    cout << "final averaged structure: final.cfg" << endl;
   }
 
 
