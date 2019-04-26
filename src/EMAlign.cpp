@@ -13,7 +13,7 @@ void EMHome::runAlign(gbCnf& cnfModifier, double halfThick)
   if (me == 0) 
     cout << "processing geometry alignment\n";
   c0 = move(cnfModifier.readLmpData(sparams["refFile"]));
-  cnfModifier.getNBL(c0, 3.8);
+  cnfModifier.getNBL(c0, dparams["Rcut"]);
   vector<Atom> c0GBAtom;
   double loc = cnfModifier.getGBLoc(c0, c0GBAtom);
   c0 = cnfModifier.chopConfig(c0, loc, halfThick);
@@ -23,7 +23,7 @@ void EMHome::runAlign(gbCnf& cnfModifier, double halfThick)
   {
     if (i%nProcs != me) continue;
     c1 = move(cnfModifier.readLmpData("final." + to_string(i) + ".txt"));
-    cnfModifier.getNBL(c1, 3.8);
+    cnfModifier.getNBL(c1, dparams["Rcut"]);
     vector<Atom> c1GBAtom;
     double loc = cnfModifier.getGBLoc(c1, c1GBAtom);
     c1 = cnfModifier.chopConfig(c1, loc, halfThick);
@@ -121,7 +121,6 @@ void EMHome::gbCnf::getNBL(Config& cnf, double Rcut = 3.8)
     vector<int> res;
     for (int j = 0; j < tmpAtoms.size(); ++j)
     {
-      //double dist = calDist(tmpLength, tmpAtoms, i, j);
       double dist = calDist(tmpLength, tmpAtoms[i], tmpAtoms[j]);
       if ((dist <= Rcut) && (j % cnf.atoms.size() - i != 0))
         res.push_back(j);
@@ -157,40 +156,6 @@ vector<Atom> EMHome::gbCnf::expandCellZ(const Config& cnf, const int factor)
   return res;
 }
 
-/*calculate distance between two atoms in one configuration*/
-/*
-double EMHome::gbCnf::calDist(const vector<double> length, const vector<Atom>& atoms,\
-    int i, int j)
-{
-  double xi = atoms[i].pst[X];
-  double xj = atoms[j].pst[X];
-  double yi = atoms[i].pst[Y];
-  double yj = atoms[j].pst[Y];
-  double zi = atoms[i].pst[Z];
-  double zj = atoms[j].pst[Z];
-  double a, b, c;
-
-  if (xj - xi >= 0.5 * length[X])
-    a = (xi - xj + length[X]);
-  else if (xj - xi <  -0.5 * length[X])
-    a = (xi - xj - length[X]); 
-  else
-    a = xi - xj;
-
-  b = yi - yj;
-
-  if (zj - zi >= 0.5 * length[Z])
-    c = (zi - zj + length[Z]);
-  else if (zj - zi <  -0.5 * length[Z])
-    c = (zi - zj - length[Z]); 
-  else
-    c = zi - zj;
-
-  double dist = sqrt(a*a + b*b + c*c);
-  return dist;
-}
-*/
-
 /*calculate distance between one atom in configuration and one from ref*/
 double EMHome::gbCnf::calDist(const vector<double> length, const Atom& atm1,\
                               const Atom& atm2)
@@ -223,8 +188,6 @@ double EMHome::gbCnf::calDist(const vector<double> length, const Atom& atm1,\
   return dist;
 }
 
-
-
 /*return GB Y location value, and atm stores atoms in GB level bin*/
 double EMHome::gbCnf::getGBLoc(Config& cnf, vector<Atom>& atm)
 {
@@ -247,20 +210,22 @@ double EMHome::gbCnf::getGBLoc(Config& cnf, vector<Atom>& atm)
       }
     }
   }
-  double bestScore = 0.0, bestLoc = 0.0;
+  //double bestScore = 0.0, bestLoc = 0.0;
+  double bestScore = std::numeric_limits<double>::max(), bestLoc = 0.0;
   for (int i = 0; i < nBins; ++i)
   {
     if (Count[i] > 0.01)
     {
       Loc[i] /= Count[i];
-      if (stddev(Score[i]) > bestScore)
+      //if (stddev(Score[i]) > bestScore)
+      if (meanV(Score[i]) < bestScore)
       {
-        bestScore = stddev(Score[i]);
+        bestScore = meanV(Score[i]);
         bestLoc = Loc[i];
         atm = atomList[i];
       }
     }
-    //cout << i << " " << stddev(Score[i]) << " " << Loc[i] << endl;
+    //cout << i << " " << meanV(Score[i]) << " " << Loc[i] << endl;
   }
   return bestLoc;
 }

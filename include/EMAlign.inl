@@ -29,10 +29,15 @@ inline double getStdDevProb(vector<double> const & A,
   return std;
 }
 
+inline double meanV(vector<double> const & A)
+{
+  return std::accumulate(A.begin(), A.end(), 0.0) / A.size();
+}
+
 /*calculate std deviation of a vector*/
 inline double stddev(vector<double> const & A)
 {
-  double mean = std::accumulate(A.begin(), A.end(), 0.0) / A.size();
+  double mean = meanV(A);
   double sq_sum = std::inner_product(A.begin(), A.end(), A.begin(), 
     0.0, [](double const & x, double const & y) {return x + y;},
     [mean](double const & x, double const & y) {return (x - mean)*(y - mean);});
