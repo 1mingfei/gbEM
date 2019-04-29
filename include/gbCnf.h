@@ -38,7 +38,7 @@ public:
   double calDist(const vector<double>, const Atom&, const Atom&);
   void getNBL(Config&, double);
   /*return GB Y location value, and atm stores atoms in GB level bin*/
-  double getGBLoc(Config&, vector<Atom>&);
+  double getGBLoc(Config&, vector<Atom>&, int (*f)(const vector<vector<double>>&, const vector<double>&));
 
   /*closest ID
    *EMStat.cpp*/

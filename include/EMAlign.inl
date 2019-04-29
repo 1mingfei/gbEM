@@ -29,6 +29,7 @@ inline double getStdDevProb(vector<double> const & A,
   return std;
 }
 
+/*calculate mean val of a vector*/
 inline double meanV(vector<double> const & A)
 {
   return std::accumulate(A.begin(), A.end(), 0.0) / A.size();
@@ -91,3 +92,5 @@ inline double calInPlaneScore(vector<Atom> list0, vector<Atom> list1)
   sum /= double(minSize);
   return sum;
 }
+
+

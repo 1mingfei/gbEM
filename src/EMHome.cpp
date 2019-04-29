@@ -17,6 +17,7 @@ EMHome::EMHome(int argc, char* argv[])
   dparams["halfThick"] = 10.0;
   dparams["T"] = 300.0;
   sparams["refFile"] = "lmp.init";
+  sparams["AlignFnx"] = "meanScore";
   dparams["Rcut"] = 3.8;
   parseArgs(argc, argv);
   initParam();

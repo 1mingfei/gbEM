@@ -34,6 +34,8 @@ void EMHome::readParam() {
       iparams[segs[0]] = stof(segs[1]);
     else if (!segs[0].compare("Rcut"))
       dparams[segs[0]] = stof(segs[1]);
+    else if (!segs[0].compare("AlignFnx"))
+      sparams[segs[0]] = segs[1];
   }
   fid.close();
 }

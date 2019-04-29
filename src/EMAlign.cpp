@@ -7,6 +7,7 @@
  */
 
 #include "gbCnf.h"
+#include "userDefFnx.inl"
 
 void EMHome::runAlign(gbCnf& cnfModifier, double halfThick)
 {
@@ -15,7 +16,12 @@ void EMHome::runAlign(gbCnf& cnfModifier, double halfThick)
   c0 = move(cnfModifier.readLmpData(sparams["refFile"]));
   cnfModifier.getNBL(c0, dparams["Rcut"]);
   vector<Atom> c0GBAtom;
-  double loc = cnfModifier.getGBLoc(c0, c0GBAtom);
+  double loc = 0.0;
+  if (sparams["AlignFnx"] == "meanScore")
+    loc = cnfModifier.getGBLoc(c0, c0GBAtom, meanScore);
+  else if (sparams["AlignFnx"] == "stdScore")
+    loc = cnfModifier.getGBLoc(c0, c0GBAtom, stdScore);
+
   c0 = cnfModifier.chopConfig(c0, loc, halfThick);
   if (me==0)
     cnfModifier.writeLmpDataDebug(c0, to_string(NI) + ".txt");
@@ -25,7 +31,12 @@ void EMHome::runAlign(gbCnf& cnfModifier, double halfThick)
     c1 = move(cnfModifier.readLmpData("final." + to_string(i) + ".txt"));
     cnfModifier.getNBL(c1, dparams["Rcut"]);
     vector<Atom> c1GBAtom;
-    double loc = cnfModifier.getGBLoc(c1, c1GBAtom);
+    double loc = 0.0;
+    if (sparams["AlignFnx"] == "meanScore")
+      loc = cnfModifier.getGBLoc(c1, c1GBAtom, meanScore);
+    else if (sparams["AlignFnx"] == "stdScore")
+      loc = cnfModifier.getGBLoc(c1, c1GBAtom, stdScore);
+
     c1 = cnfModifier.chopConfig(c1, loc, halfThick);
     double bestScore = cnfModifier.alignInPlane(c0, c1, c0GBAtom, c1GBAtom);
     cnfModifier.writeLmpDataDebug(c1, to_string(i) + ".txt");
@@ -189,9 +200,11 @@ double EMHome::gbCnf::calDist(const vector<double> length, const Atom& atm1,\
 }
 
 /*return GB Y location value, and atm stores atoms in GB level bin*/
-double EMHome::gbCnf::getGBLoc(Config& cnf, vector<Atom>& atm)
+double EMHome::gbCnf::getGBLoc(Config& cnf, vector<Atom>& atm,
+                       int (*f)(const vector<vector<double>>&, const vector<double>&))
 {
   int nBins = 20;
+  double bestLoc = 0.0;
   vector<vector<double>> Score(nBins); //sum CN
   vector<double> Count(nBins, 0); //count how many atoms in each bin
   vector<double> Loc(nBins, 0); //in Y dimension
@@ -210,22 +223,33 @@ double EMHome::gbCnf::getGBLoc(Config& cnf, vector<Atom>& atm)
       }
     }
   }
-  //double bestScore = 0.0, bestLoc = 0.0;
-  double bestScore = std::numeric_limits<double>::max(), bestLoc = 0.0;
+  //get averaged location
+  for (int i = 0; i < nBins; ++i)
+    if (Count[i] > 0.01)
+      Loc[i] /= Count[i];
+
+  /*
+  double bestScore = 0.0; //1210TB
+  //double bestScore = std::numeric_limits<double>::max(); //FCC100
   for (int i = 0; i < nBins; ++i)
   {
     if (Count[i] > 0.01)
     {
-      Loc[i] /= Count[i];
-      //if (stddev(Score[i]) > bestScore)
-      if (meanV(Score[i]) < bestScore)
+      if (stddev(Score[i]) > bestScore) //1210TB
+      //if (meanV(Score[i]) < bestScore) //FCC100
       {
-        bestScore = meanV(Score[i]);
+        bestScore = stddev(Score[i]); //1210TB
+        //bestScore = meanV(Score[i]); //FCC100
         bestLoc = Loc[i];
         atm = atomList[i];
       }
     }
-    //cout << i << " " << meanV(Score[i]) << " " << Loc[i] << endl;
   }
+  */
+
+  int index = (*f)(Score, Loc);
+  bestLoc = Loc[index];
+  atm = atomList[index];
   return bestLoc;
 }
+
