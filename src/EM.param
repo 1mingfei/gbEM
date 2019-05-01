@@ -1,5 +1,6 @@
 Nconfigs   10
 refFile opt.0.txt
+AlignFnx  meanScore
 halfThick  10.0
 T 300.0
 N 1530
