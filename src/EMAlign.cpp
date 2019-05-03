@@ -21,6 +21,8 @@ void EMHome::runAlign(gbCnf& cnfModifier, double halfThick)
     loc = cnfModifier.getGBLoc(c0, c0GBAtom, meanScore);
   else if (sparams["AlignFnx"] == "stdScore")
     loc = cnfModifier.getGBLoc(c0, c0GBAtom, stdScore);
+  else if (sparams["AlignFnx"] == "CNCountScore")
+    loc = cnfModifier.getGBLoc(c0, c0GBAtom, CNCountScore);
 
   c0 = cnfModifier.chopConfig(c0, loc, halfThick);
   if (me==0)
@@ -36,6 +38,8 @@ void EMHome::runAlign(gbCnf& cnfModifier, double halfThick)
       loc = cnfModifier.getGBLoc(c1, c1GBAtom, meanScore);
     else if (sparams["AlignFnx"] == "stdScore")
       loc = cnfModifier.getGBLoc(c1, c1GBAtom, stdScore);
+    else if (sparams["AlignFnx"] == "CNCountScore")
+      loc = cnfModifier.getGBLoc(c1, c1GBAtom, CNCountScore);
 
     c1 = cnfModifier.chopConfig(c1, loc, halfThick);
     double bestScore = cnfModifier.alignInPlane(c0, c1, c0GBAtom, c1GBAtom);
@@ -203,7 +207,7 @@ double EMHome::gbCnf::calDist(const vector<double> length, const Atom& atm1,\
 double EMHome::gbCnf::getGBLoc(Config& cnf, vector<Atom>& atm,
                        int (*f)(const vector<vector<double>>&, const vector<double>&))
 {
-  int nBins = 20;
+  int nBins = 30;
   double bestLoc = 0.0;
   vector<vector<double>> Score(nBins); //sum CN
   vector<double> Count(nBins, 0); //count how many atoms in each bin

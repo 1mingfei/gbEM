@@ -28,6 +28,7 @@ int meanScore(const vector<vector<double>>& Score, \
   }
   return bestIndex;
 }
+
 int stdScore(const vector<vector<double>>& Score, \
                      const vector<double>& Loc)
 {
@@ -45,6 +46,35 @@ int stdScore(const vector<vector<double>>& Score, \
     }
 #ifdef DEBUG
     cout << i << " " << stddev(Score[i]) << " " << Loc[i] << endl;
+#endif
+  }
+  return bestIndex;
+}
+
+int CNCountScore(const vector<vector<double>>& Score, \
+                     const vector<double>& Loc)
+{
+  int bestIndex = Score.size();
+  double bestScore = 0.0; 
+  for (int i = 0; i < Score.size(); ++i)
+  {
+    if (Loc[i] > 0.01)
+    {
+      double tmp = 0;
+      if (Score[i].size())
+      {
+        for (int j = 0; j < Score[i].size(); ++j)
+          if (Score[i][j] > 12)
+            tmp += 1.0;
+        if (tmp > bestScore) 
+        {
+          bestScore = tmp;
+          bestIndex = i;
+        }
+      }
+    }
+#ifdef DEBUG
+    cout << i << " " << tmp << " " << Loc[i] << endl;
 #endif
   }
   return bestIndex;
