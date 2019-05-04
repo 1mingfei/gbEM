@@ -231,7 +231,8 @@ void EMHome::estimateMean(gbCnf& cnfModifier)
       c0.atoms[i].pst[Z] = data[i][4];
     }
     cnfModifier.cnvpst2prl(c0);
-    cnfModifier.writeCfgData(c0, VVData, "final.cfg");
+    vector<string> names = {sparams["elem0"], sparams["elem1"]};
+    cnfModifier.writeCfgData(c0, VVData, names, "final.cfg");
     cout << "final averaged structure: final.cfg" << endl;
   }
 

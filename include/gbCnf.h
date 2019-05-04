@@ -27,7 +27,9 @@ public:
    *gbOutCnf.cpp*/
   void writeLmpData(Config&, string);
   void writeLmpDataDebug(Config&, string);
-  void writeCfgData(const Config& c, const vector<vector<double>>&,string);
+  void writeCfgData(const Config& c, const vector<vector<double>>&, 
+                    const vector<string>&, string);
+  double findMass(string);
 
   /*alignment
    *EMAlign.cpp*/
@@ -38,7 +40,8 @@ public:
   double calDist(const vector<double>, const Atom&, const Atom&);
   void getNBL(Config&, double);
   /*return GB Y location value, and atm stores atoms in GB level bin*/
-  double getGBLoc(Config&, vector<Atom>&, int (*f)(const vector<vector<double>>&, const vector<double>&));
+  double getGBLoc(Config&, vector<Atom>&, int (*f)(const vector<vector<double>>&,
+                                                   const vector<double>&));
 
   /*closest ID
    *EMStat.cpp*/
@@ -74,4 +77,6 @@ inline bool isInside(const vector<double>& pos) {
   return pos[0] <= 1 && pos[0] >= 0 && pos[1] >= 0 && pos[1] <= 1 &&
          pos[2] >= 0 && pos[2] <= 1;
 }
+
+#include "Elem.inl"
 #endif

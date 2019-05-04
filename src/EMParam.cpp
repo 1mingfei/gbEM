@@ -36,6 +36,10 @@ void EMHome::readParam() {
       dparams[segs[0]] = stof(segs[1]);
     else if (!segs[0].compare("AlignFnx"))
       sparams[segs[0]] = segs[1];
+    else if (!segs[0].compare("elem0"))
+      sparams[segs[0]] = segs[1];
+    else if (!segs[0].compare("elem1"))
+      sparams[segs[0]] = segs[1];
   }
   fid.close();
 }

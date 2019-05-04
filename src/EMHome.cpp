@@ -19,6 +19,8 @@ EMHome::EMHome(int argc, char* argv[])
   sparams["refFile"] = "lmp.init";
   sparams["AlignFnx"] = "meanScore";
   dparams["Rcut"] = 3.8;
+  sparams["elem0"] = "Mg";
+  sparams["elem1"] = "Zn";
   parseArgs(argc, argv);
   initParam();
   NI = iparams["Nconfigs"];

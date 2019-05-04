@@ -94,7 +94,9 @@ Ar
       buffData[9] = stdTp;
 
  */
-void EMHome::gbCnf::writeCfgData(const Config& c, const vector<vector<double>>& data,
+void EMHome::gbCnf::writeCfgData(const Config& c, 
+                                 const vector<vector<double>>& data,
+                                 const vector<string>& elems, 
                                  string fnm = "out.lmp.init")
 {
   ofstream ofs(fnm, std::ofstream::out);
@@ -118,17 +120,27 @@ void EMHome::gbCnf::writeCfgData(const Config& c, const vector<vector<double>>& 
   ofs << "auxiliary[4] = std_distance" << endl;
   ofs << "auxiliary[5] = mean_type" << endl;
   ofs << "auxiliary[6] = std_type" << endl;
+  double mass0 = findMass(elems[0]);
+  double mass1 = findMass(elems[1]);
   for (int i = 0; i < c.atoms.size(); ++i) 
   {
     auto&& a = c.atoms[i];
     if (a.tp == 1)
-      ofs << "24.305" << endl << "Mg" << endl;
+      ofs << mass0 << endl << elems[0] << endl;
     else if (a.tp == 4)
-      ofs << "65.38" << endl << "Zn" << endl;
+      ofs << mass1 << endl << elems[1] << endl;
     ofs << a.prl[X] << " " << a.prl[Y] << " " << a.prl[Z] << " ";
     if (data.size())
       ofs << data[i][1] << " " << data[i][3] << " " << data[i][5] << " "
           << data[i][6] << " " << data[i][7] << " " << data[i][8] << " "
           << data[i][9] << endl; 
   }
+}
+
+double EMHome::gbCnf::findMass(string x)
+{
+  /*this "it" is indeed a iterator*/
+  auto it = std::find(element.begin(), element.end(), x);
+  int index = std::distance(element.begin(), it);
+  return mass[index];
 }
