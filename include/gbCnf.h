@@ -8,8 +8,7 @@ using arma::mat;
 using arma::vec;
 using std::vector;
 
-class EMHome::gbCnf 
-{
+class EMHome::gbCnf {
   EMHome& hm;
   vector<Config>& cnfs;
   unordered_map<string, string>& sparams;

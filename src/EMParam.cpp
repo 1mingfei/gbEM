@@ -21,7 +21,6 @@ void EMHome::readParam() {
   while (getline(fid, buff)) {
     segs.clear();
     split(buff, " ", segs);
-    //cout << segs[0] << " " << segs[1] << endl;
     if (!segs[0].compare("Nconfigs"))
       iparams[segs[0]] = stoi(segs[1]);
     else if (!segs[0].compare("refFile"))

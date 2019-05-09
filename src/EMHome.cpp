@@ -8,8 +8,7 @@
 #include "gbCnf.h"
 #include "EMHome.h"
 
-EMHome::EMHome(int argc, char* argv[])
-{
+EMHome::EMHome(int argc, char* argv[]) {
   MPI_Comm_size(MPI_COMM_WORLD, &nProcs);
   MPI_Comm_rank(MPI_COMM_WORLD, &me);
 
@@ -38,6 +37,4 @@ EMHome::EMHome(int argc, char* argv[])
   estimateMean(cnfModifier);
 }
 
-EMHome::~EMHome() 
-{
-}
+EMHome::~EMHome() {}

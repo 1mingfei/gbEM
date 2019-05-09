@@ -7,8 +7,8 @@
  */
 
 /*calculate mean of a vector with predefined prob*/
-inline double getProbMean(vector<double> const & A, vector<double> const & prob)
-{
+inline double getProbMean(vector<double> const & A,
+                          vector<double> const & prob) {
   assert(A.size() == prob.size());
   double sum = 0.0;
   for (int i = 0; i < A.size(); ++i)
@@ -19,8 +19,7 @@ inline double getProbMean(vector<double> const & A, vector<double> const & prob)
 /*calculate std deviation of a vector with predefined prob*/
 inline double getStdDevProb(vector<double> const & A,
                             vector<double> const & prob,
-                            double const mean)
-{
+                            double const mean) {
   assert(A.size() == prob.size());
   double sum = 0.0;
   for (int i = 0; i < A.size(); ++i)
@@ -30,14 +29,12 @@ inline double getStdDevProb(vector<double> const & A,
 }
 
 /*calculate mean val of a vector*/
-inline double meanV(vector<double> const & A)
-{
+inline double meanV(vector<double> const & A) {
   return std::accumulate(A.begin(), A.end(), 0.0) / A.size();
 }
 
 /*calculate std deviation of a vector*/
-inline double stddev(vector<double> const & A)
-{
+inline double stddev(vector<double> const & A) {
   double mean = meanV(A);
   double sq_sum = std::inner_product(A.begin(), A.end(), A.begin(), 
     0.0, [](double const & x, double const & y) {return x + y;},
@@ -46,15 +43,13 @@ inline double stddev(vector<double> const & A)
 }
 
 /*Sort points lexicographically*/
-inline void sortAtomLexi(vector<Atom>& atmList)
-{
+inline void sortAtomLexi(vector<Atom>& atmList) {
   sort(atmList.begin(), atmList.end(),
     [](const Atom& a, const Atom& b) -> bool
     {return a.pst[X] < b.pst[X] || (a.pst[X] == b.pst[X] && a.pst[Z] < b.pst[Z]);});
 }
 
-inline vector<double> calDisp(Atom& a1, Atom& a2)
-{
+inline vector<double> calDisp(Atom& a1, Atom& a2) {
   vector<double> res(3);
   res[X] = a1.pst[X] - a2.pst[X];
   res[Y] = a1.pst[Y] - a2.pst[Y];
@@ -62,35 +57,33 @@ inline vector<double> calDisp(Atom& a1, Atom& a2)
   return res;
 }
 
-inline void wrapAtom(Atom& atm, vector<double> length)
-{
+inline void wrapAtom(Atom& atm, vector<double> length) {
   /*wrap back atoms in x and z direction*/
   int tmp = std::floor(atm.pst[X]/length[X]);
-  if (tmp)
+  if (tmp) {
     atm.pst[X] -= tmp*length[X];
+  }
   tmp = std::floor(atm.pst[Z]/length[Z]);
-  if (tmp)
+  if (tmp) {
     atm.pst[Z] -= tmp*length[Z];
+  }
 }
 
 /*calculate in-plane misfit score function
  *Note1: this only calculate in plane atoms*/
-inline double calInPlaneScore(vector<Atom> list0, vector<Atom> list1)
-{
+inline double calInPlaneScore(vector<Atom> list0, vector<Atom> list1) {
   int minSize = std::min(list0.size(), list1.size());
   double sum = 0.0;
-  for (int i = 0; i < minSize; ++i)
-  {
+  for (int i = 0; i < minSize; ++i) {
     vector<double> disp = calDisp(list0[i], list1[i]);
     double factor;
-    if (list0[i].tp == list1[i].tp)
+    if (list0[i].tp == list1[i].tp) {
       factor = 1.0;
-    else
+    } else {
       factor = 10.0;
+    }
     sum += factor*std::sqrt(disp[X]*disp[X] + disp[Z]*disp[Z]);
   }
   sum /= double(minSize);
   return sum;
 }
-
-

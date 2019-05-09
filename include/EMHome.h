@@ -42,8 +42,7 @@ using std::to_string;
 using std::unordered_map;
 using std::vector;
 
-class EMHome 
-{
+class EMHome {
 private:
   vector<Config> cnfs;
   

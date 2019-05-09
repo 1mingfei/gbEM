@@ -97,8 +97,7 @@ Ar
 void EMHome::gbCnf::writeCfgData(const Config& c, 
                                  const vector<vector<double>>& data,
                                  const vector<string>& elems, 
-                                 string fnm = "out.lmp.init")
-{
+                                 string fnm = "out.lmp.init") {
   ofstream ofs(fnm, std::ofstream::out);
   ofs << "Number of particles =  " << (int)c.atoms.size() << endl;
   ofs << "A = 1.0 Angstrom (basic length-scale)" << endl;
@@ -122,13 +121,13 @@ void EMHome::gbCnf::writeCfgData(const Config& c,
   ofs << "auxiliary[6] = std_type" << endl;
   double mass0 = findMass(elems[0]);
   double mass1 = findMass(elems[1]);
-  for (int i = 0; i < c.atoms.size(); ++i) 
-  {
+  for (int i = 0; i < c.atoms.size(); ++i) {
     auto&& a = c.atoms[i];
-    if (a.tp == 1)
+    if (a.tp == 1) {
       ofs << mass0 << endl << elems[0] << endl;
-    else if (a.tp == 4)
+    } else if (a.tp == 4) {
       ofs << mass1 << endl << elems[1] << endl;
+    }
     ofs << a.prl[X] << " " << a.prl[Y] << " " << a.prl[Z] << " ";
     if (data.size())
       ofs << data[i][1] << " " << data[i][3] << " " << data[i][5] << " "
@@ -137,8 +136,7 @@ void EMHome::gbCnf::writeCfgData(const Config& c,
   }
 }
 
-double EMHome::gbCnf::findMass(string x)
-{
+double EMHome::gbCnf::findMass(string x) {
   /*this "it" is indeed a iterator*/
   auto it = std::find(element.begin(), element.end(), x);
   int index = std::distance(element.begin(), it);

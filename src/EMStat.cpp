@@ -10,8 +10,7 @@
 
 /*gather energies from all the structures
  *and calculate probability */
-void EMHome::getProb(gbCnf& cnfModifier, double T, double N)
-{
+void EMHome::getProb(gbCnf& cnfModifier, double T, double N) {
   MPI_Barrier(MPI_COMM_WORLD);
   if (me == 0)
     std::cout << "processing Boltzmann probability\n";
@@ -20,11 +19,9 @@ void EMHome::getProb(gbCnf& cnfModifier, double T, double N)
   int remainder = NI % nProcs;
   int nCycle = remainder ? (quotient + 1) : quotient;
   /*calculate total boltzmann energy Z*/
-  for (int j = 0; j < nCycle; ++j)
-  {
+  for (int j = 0; j < nCycle; ++j) {
     double* subEngys = new double[nProcs];
-    for (int i = (j * nProcs); i < ((j + 1) * nProcs); ++i)
-    {
+    for (int i = (j * nProcs); i < ((j + 1) * nProcs); ++i) {
       if (i % nProcs != me) continue;
       boltzEngy = 0.0; //important to initialize here
       if (i >= NI) continue;
@@ -46,8 +43,7 @@ void EMHome::getProb(gbCnf& cnfModifier, double T, double N)
     MPI_Gather(&boltzEngy, 1, MPI_DOUBLE, subEngys, 1, MPI_DOUBLE, 0,
                MPI_COMM_WORLD);
 
-    if (me == 0)
-    {
+    if (me == 0) {
       cout << "subset energies: ";
       for (int i = 0; i < nProcs; ++i)
         cout << subEngys[i] << "   ";
@@ -58,11 +54,11 @@ void EMHome::getProb(gbCnf& cnfModifier, double T, double N)
     }
     delete [] subEngys;
   }
+
   MPI_Bcast(&sumEngy, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
   cout << "rank " << me << " sum energy: " << sumEngy << endl;
   /*calculate total boltzmann energy Z*/
-  for (int i = 0; i < NI; ++i)
-  {
+  for (int i = 0; i < NI; ++i) {
     if (i % nProcs != me) continue;
     cnfs[i].oldEngy = cnfs[i].engy/sumEngy;
     cnfModifier.writeLmpDataDebug(cnfs[i], to_string(i) + ".txt");
@@ -73,8 +69,7 @@ void EMHome::getProb(gbCnf& cnfModifier, double T, double N)
 
 /*calculate which is the nearest point in reference system and average pos 
  *then calculate type mean and std. */
-void EMHome::estimateMean(gbCnf& cnfModifier)
-{
+void EMHome::estimateMean(gbCnf& cnfModifier) {
   MPI_Barrier(MPI_COMM_WORLD);
   if (me == 0)
     std::cout << "calculating ave configuration based on energies...\n";
@@ -103,12 +98,9 @@ void EMHome::estimateMean(gbCnf& cnfModifier)
   /*smallest buff for gathering in each cycle*/
   double* buffData = new double [10];
 
-  for (int k = 0; k < nCycle; ++k)
-  {
-    for (int i = (k * nProcs); i < ((k + 1) * nProcs); ++i)
-    {
-      if ((me == 0) && (i % nProcs != 0))
-      {
+  for (int k = 0; k < nCycle; ++k) {
+    for (int i = (k * nProcs); i < ((k + 1) * nProcs); ++i) {
+      if ((me == 0) && (i % nProcs != 0)) {
         MPI_Recv(&data[i][0], 10, MPI_DOUBLE, (i % nProcs), 0,
                  MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       }
@@ -129,8 +121,7 @@ void EMHome::estimateMean(gbCnf& cnfModifier)
 
       if (i >= nAtom) continue;
 
-      for (int j = 0; j < NI; ++j)
-      {
+      for (int j = 0; j < NI; ++j) {
         /*get which atom in cnfs[j] is closest to atom[i] in c0. */
         double dist;
         int closest = cnfModifier.getNNID(c0.atoms[i], cnfs[j], dist);
@@ -189,10 +180,9 @@ void EMHome::estimateMean(gbCnf& cnfModifier)
       buffData[8] = meanType;
       buffData[9] = stdTp;
 
-      if (me != 0)
+      if (me != 0) {
         MPI_Send(&buffData[0], 10, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
-      else
-      {
+      } else {
         for (int ii = 0; ii < 10; ++ii)
           data[k * nProcs + i % nProcs][ii] = buffData[ii];
       }
@@ -201,18 +191,15 @@ void EMHome::estimateMean(gbCnf& cnfModifier)
     MPI_Barrier(MPI_COMM_WORLD);
   }
 
-  if (me == 0)
-  {
+  if (me == 0) {
     //convert data to vector dtype
     vector<vector<double>> VVData;
-    for (int i = 0; i < (nCycle * nProcs); ++i)
-    {
+    for (int i = 0; i < (nCycle * nProcs); ++i) {
       vector<double> tmpVec;
 #ifdef DEBUG
       cout << i << " ";
 #endif
-      for (int j = 0; j < 10; ++j)
-      {
+      for (int j = 0; j < 10; ++j) {
 #ifdef DEBUG
         cout  << std::setprecision(5) << data[i][j] << " ";
 #endif
@@ -224,8 +211,7 @@ void EMHome::estimateMean(gbCnf& cnfModifier)
       VVData.push_back(tmpVec);
     }
     /*update c0 position informations*/
-    for (int i = 0; i < c0.atoms.size(); ++i)
-    {
+    for (int i = 0; i < c0.atoms.size(); ++i) {
       c0.atoms[i].pst[X] = data[i][0];
       c0.atoms[i].pst[Y] = data[i][2];
       c0.atoms[i].pst[Z] = data[i][4];
@@ -250,15 +236,12 @@ void EMHome::estimateMean(gbCnf& cnfModifier)
 /*get which atom in c1 is closest to atom[i] in c0.
  *atm is our reference atom, cnf is the sturcture to search
  *calculated dist is returned afterwards. */
-int EMHome::gbCnf::getNNID(Atom& atm, Config& cnf, double& dist)
-{
+int EMHome::gbCnf::getNNID(Atom& atm, Config& cnf, double& dist) {
   dist = std::numeric_limits<double>::max();
   int res;
-  for (int i = 0; i < cnf.atoms.size(); ++i)
-  {
+  for (int i = 0; i < cnf.atoms.size(); ++i) {
     double tmpDist = calDist(cnf.length, cnf.atoms[i], atm);
-    if (tmpDist < dist)
-    {
+    if (tmpDist < dist) {
       dist = tmpDist;
       res = i;
     }

@@ -12,8 +12,7 @@ int main(int argc, char* argv[]) {
   if (em) delete em;
   auto t2 = Clock::now();
   MPI_Barrier(MPI_COMM_WORLD);
-  if (me == 0)
-  {
+  if (me == 0) {
     cout << "Delta t2-t1: "
          << std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count()
          << " seconds" << endl;
