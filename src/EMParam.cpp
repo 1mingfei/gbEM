@@ -26,13 +26,13 @@ void EMHome::readParam() {
     else if (!segs[0].compare("refFile"))
       sparams[segs[0]] = segs[1];
     else if (!segs[0].compare("halfThick"))
-      dparams[segs[0]] = stof(segs[1]);
+      dparams[segs[0]] = stod(segs[1]);
     else if (!segs[0].compare("T"))
-      dparams[segs[0]] = stof(segs[1]);
+      dparams[segs[0]] = stod(segs[1]);
     else if (!segs[0].compare("N"))
-      iparams[segs[0]] = stof(segs[1]);
+      iparams[segs[0]] = stoi(segs[1]);
     else if (!segs[0].compare("Rcut"))
-      dparams[segs[0]] = stof(segs[1]);
+      dparams[segs[0]] = stod(segs[1]);
     else if (!segs[0].compare("AlignFnx"))
       sparams[segs[0]] = segs[1];
     else if (!segs[0].compare("elem0"))
